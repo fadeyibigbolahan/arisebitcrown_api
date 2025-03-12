@@ -321,13 +321,9 @@ GET ALL USERS => ENDS
 /****************************************************************************************************
 UPDATE USER => START
 ****************************************************************************************************/
-router.put("/profile", upload.single("file"), userAuth, async (req, res) => {
+router.put("/profile", userAuth, async (req, res) => {
   const userId = req.user._id;
   const updates = req.body;
-
-  if (req.file) {
-    updates.avatar = req.file.location; // Save the path of the uploaded file
-  }
 
   try {
     // Validate updates here if needed
