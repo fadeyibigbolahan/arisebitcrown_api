@@ -386,41 +386,4 @@ router.get("/search", userAuth, async (req, res) => {
 /****************************************************************************************************
 QUERY USERS => ENDS
 ****************************************************************************************************/
-
-/****************************************************************************************************
-UPDATE PROFILE PICTURE => START
-****************************************************************************************************/
-router.put(
-  "/upload/:username",
-  upload.single("file"),
-  userAuth,
-  async (req, res) => {
-    const user = req.user.userName;
-    const avatar = req.file;
-    const userAccount = await User.findOne({ userName: req.params.username });
-    try {
-      if (user === userAccount.userName) {
-        await userAccount.updateOne(
-          { $set: { avatar: avatar?.location } },
-          { runValidators: true }
-        );
-        const updatedUserAccount = await User.findOne({
-          userName: req.params.username,
-        });
-        const userDets = serializeUser(updatedUserAccount);
-        return res.status(200).json(userDets);
-      } else {
-        return res.status(403).json({
-          message: "You can update only your account!",
-          success: false,
-        });
-      }
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  }
-);
-/****************************************************************************************************
-UPDATE PROFILE PICTURE => ENDS
-****************************************************************************************************/
 module.exports = router;
