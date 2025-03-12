@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "546032115139",
+    "project_id": "rhemax-inc",
+    "storage_bucket": "rhemax-inc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546032115139:android:b1f6774e033ab1efbcf176",
+        "android_client_info": {
+          "package_name": "com.fagis.rhemax"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC90r-7fHfIgK8Y0uMQmSVWfwGJjA8HX5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
