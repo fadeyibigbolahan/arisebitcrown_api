@@ -46,7 +46,7 @@ LOGIN => START
  ***************************************************************************************************/
 // Users Login Route
 router.post("/login-user", async (req, res) => {
-  await userLogin(req.body, "user", res);
+  await userLogin(req.body, res);
 });
 
 // Admin Login Route

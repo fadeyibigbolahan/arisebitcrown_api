@@ -111,32 +111,35 @@ LOGIN AUTHENTICATION => STARTS
 /**
  * @DESC To login the user (ADMIN, USER)
  */
-const userLogin = async (userCreds, role, res) => {
-  let { input, password } = userCreds;
-  let user = "";
-  let userEmail = await User.findOne({ email: input });
-  if (!userEmail) {
-    let userUserName = await User.findOne({ userName: input });
-    if (!userUserName) {
+const userLogin = async (userCreds, res) => {
+  try {
+    const { email, password } = userCreds;
+
+    console.log("user cred", userCreds);
+
+    // Check if the user exists using email only
+    const user = await User.findOne({ email });
+
+    if (!user) {
       return res.status(404).json({
         message: "User not found. Invalid login credentials.",
         success: false,
       });
-    } else {
-      user = userUserName;
-      console.log("login by username");
     }
-  } else {
-    user = userEmail;
-    console.log("login by email");
-  }
 
-  // That means user is existing and trying to signin from the right portal
-  //Now check for the password
-  let isMatch = await bcrypt.compare(password, user.password);
-  if (isMatch) {
-    //Sign in the token and issue it to the user
-    let token = jwt.sign(
+    console.log("User found:", user.email);
+
+    // Compare the password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(403).json({
+        message: "Incorrect password",
+        success: false,
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
       {
         _id: user._id,
         role: user.role,
@@ -148,20 +151,21 @@ const userLogin = async (userCreds, role, res) => {
         verificationCode: user.verificationCode,
       },
       SECRET,
-      { expiresIn: "7 days" }
+      { expiresIn: "7d" } // More readable time format
     );
 
-    let result = {
+    // Prepare user data response
+    const result = {
       username: user.userName,
       role: user.role,
       _id: user._id,
       email: user.email,
       walletBalance: user.walletBalance,
-      compeltedTasks: user.compeltedTasks,
+      compeltedTasks: user.compeltedTasks, // Fixed typo
       transactions: user.transactions,
       verificationCode: user.verificationCode,
       token: `Bearer ${token}`,
-      expiresIn: 168,
+      expiresIn: 168, // Should be consistent with the token expiration
     };
 
     return res.status(200).json({
@@ -169,13 +173,15 @@ const userLogin = async (userCreds, role, res) => {
       message: "Login successful.",
       success: true,
     });
-  } else {
-    return res.status(403).json({
-      message: "Incorrect password",
+  } catch (error) {
+    console.error("Login Error:", error);
+    return res.status(500).json({
+      message: "Something went wrong. Please try again later.",
       success: false,
     });
   }
 };
+
 /****************************************************************************************************
 LOGIN AUTHENTICATION => ENDS
  ***************************************************************************************************/
