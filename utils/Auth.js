@@ -131,35 +131,6 @@ const userLogin = async (userCreds, role, res) => {
     console.log("login by email");
   }
 
-  // if (user.isVerified == false) {
-  //   const mailOptions = {
-  //     from: emailAddress,
-  //     to: user.email,
-  //     subject: "ACCOUNT VERIFICATION",
-  //     text: `This is your verification code ${user.verificationCode}`,
-  //   };
-
-  //   await transporter.sendMail(mailOptions);
-
-  //   // const verificationCode = generateRandomNumbers();
-  //   // const updateUser = await User.findById(user._id);
-  //   // updateUser.verificationCode = verificationCode;
-  //   // await updateUser.save();
-
-  //   return res.status(403).json({
-  //     message: "You are not yet verified!",
-  //     success: false,
-  //   });
-  // }
-
-  // we will check the role
-  if (user.role !== role) {
-    return res.status(403).json({
-      message: "Please make sure you are loggin in from the right portal.",
-      success: false,
-    });
-  }
-
   // That means user is existing and trying to signin from the right portal
   //Now check for the password
   let isMatch = await bcrypt.compare(password, user.password);
