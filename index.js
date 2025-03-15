@@ -94,6 +94,7 @@ const rewardDistributionFunction = async () => {
 
     for (let taskData of user.compeltedTasks) {
       const { taskId, lastRewardDate } = taskData;
+      console.log("task data", taskData);
 
       // If last reward was given within the last 24 hours, skip
       if (
@@ -120,7 +121,7 @@ const rewardDistributionFunction = async () => {
     if (totalReward > 0) {
       await User.findByIdAndUpdate(user._id, {
         $inc: { walletBalance: totalReward },
-        compleltedTasks: updatedCompletedTasks,
+        compeltedTasks: updatedCompletedTasks,
       });
 
       console.log(`Updated wallet for user ${user.email}: +$${totalReward}`);
