@@ -12,6 +12,9 @@ const app = express(); // Initialize the application
 var cors = require("cors");
 app.use(cors({ origin: true, credentials: true }));
 
+// Import cron jobs
+require("./cron/cronJobs"); // ✅ Run scheduled tasks
+
 // Middlewares
 app.use(express.json());
 app.use(passport.initialize());
