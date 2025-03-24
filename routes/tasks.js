@@ -10,9 +10,9 @@ const {
   userAuth,
 } = require("../utils/Auth");
 
-// const NOWPAYMENTS_API_KEY = "TWHP3XG-FTN496Z-JGPAVCH-CNVB0A5";
-const NOWPAYMENTS_API_KEY = "JPSM42F-VCG4ZB6-MV16CR2-BC8Y0YX";
-const CALLBACK_URL = "http://localhost:5000/webhook";
+const BITNOB_API_KEY = process.env.BITNOB_API_KEY;
+const CALLBACK_URL = "arisebitcrown.com/bitnob-webhook";
+const BASE_URL = "https://api.bitnob.co/api/v1"; // Bitnob API base URL
 
 /***************************************************************************************************
 POST: CREAT TASKS (ADMIN ONLY) => START
@@ -81,18 +81,16 @@ router.get("/complete/:taskId", userAuth, async (req, res) => {
 
     // Create a NOWPayments payment request (user pays the `fee`)
     const paymentResponse = await axios.post(
-      "https://api.nowpayments.io/v1/payment",
+      `${BASE_URL}/payments/initiate`,
       {
-        price_amount: task.fee, // Task Fee (user must pay this)
-        price_currency: "usd", // Base currency
-        pay_currency: "usdttrc20", // Accept USDT (TRC20)
-        ipn_callback_url: CALLBACK_URL, // Webhook URL
-        order_id: `${req.user.email}_${taskId}`, // Store user email + task ID
-        order_description: `Fee payment for task ${taskId}`,
+        amount: task.fee,
+        currency: "USDT", // BTC, USDT, NGN supported
+        customer_email: req.user.email,
+        callback_url: "https://arisebitcrown.com/bitnob-webhook",
       },
       {
         headers: {
-          "x-api-key": NOWPAYMENTS_API_KEY,
+          Authorization: `Bearer ${BITNOB_API_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -103,11 +101,7 @@ router.get("/complete/:taskId", userAuth, async (req, res) => {
     // Return payment link to the user
     res.status(200).json({
       message: "Send the payment to the address below.",
-      payment_id: paymentResponse.data.payment_id,
-      pay_address: paymentResponse.data.pay_address, // Address to send the USDT
-      amount_to_pay: paymentResponse.data.pay_amount, // Amount of USDT to send
-      currency: paymentResponse.data.pay_currency, // USDT (TRC20)
-      expiration: paymentResponse.data.valid_until, // Payment deadline
+      payment_url: response.data.data.checkoutUrl,
     });
   } catch (error) {
     console.error(

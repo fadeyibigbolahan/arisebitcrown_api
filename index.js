@@ -4,10 +4,17 @@ const { connect } = require("mongoose");
 const passport = require("passport");
 const { DB, PORT } = require("./config");
 
+const nodemailer = require("nodemailer");
+const multer = require("multer");
+const fs = require("fs");
+
+const { emailAddress, emailPassword } = require("./config");
+
 const Task = require("./models/Tasks");
 const User = require("./models/User");
 
 const app = express(); // Initialize the application
+const upload = multer({ dest: "uploads/" }); // Temporary storage for images
 
 var cors = require("cors");
 app.use(cors({ origin: true, credentials: true }));
@@ -24,51 +31,6 @@ require("./middlewares/passport")(passport);
 // User Router Middleware
 app.use("/api/users", require("./routes/users"));
 app.use("/api/tasks", require("./routes/tasks"));
-
-// Webhooks
-app.post("/webhook", async (req, res) => {
-  try {
-    const paymentData = req.body;
-    console.log("Payment update received:", paymentData);
-
-    // Check if payment is completed
-    if (paymentData.payment_status === "finished") {
-      const { order_id, price_amount, price_currency } = paymentData;
-
-      // Extract user email & task ID from order_id
-      const [userEmail, taskId] = order_id.split("_");
-
-      // Find task to get reward amount
-      const task = await Task.findById(taskId);
-      if (!task) {
-        return res.status(404).json({ message: "Task not found" });
-      }
-
-      // Find and update the user's wallet
-      const user = await User.findOneAndUpdate(
-        { email: userEmail },
-        {
-          $inc: { walletBalance: task.reward }, // Add reward to wallet
-          $push: { compeltedTasks: taskId }, // Mark task as completed
-        },
-        { new: true }
-      );
-
-      if (user) {
-        console.log(
-          `Task ${taskId} completed! ${userEmail} received ${task.reward} USDT.`
-        );
-      } else {
-        console.log(`User not found: ${userEmail}`);
-      }
-    }
-
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("Error processing webhook:", error);
-    res.sendStatus(500);
-  }
-});
 
 // working on cron
 
@@ -127,9 +89,49 @@ const rewardDistributionFunction = async () => {
       console.log(`Updated wallet for user ${user.email}: +$${totalReward}`);
     }
   }
-
   console.log("Reward distribution completed.");
 };
+
+app.post("/send-email", upload.single("image"), async (req, res) => {
+  const { text, email } = req.body;
+  console.log("Calleddd", text, email);
+  const image = req.file; // Uploaded image
+
+  if (!text || !image) {
+    return res.status(400).json({ error: "Text and image are required" });
+  }
+
+  try {
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: emailAddress, // Your Gmail
+        pass: emailPassword, // Your App Password
+      },
+    });
+
+    let mailOptions = {
+      from: emailAddress,
+      to: "areaforsuccess45@gmail.com", // Replace with your email
+      subject: "Payment confirmation",
+      text: `User submitted: ${email}, ${text}`,
+      attachments: [
+        {
+          filename: image.originalname,
+          path: image.path, // Path to temporary uploaded file
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+    fs.unlinkSync(image.path); // Delete file after sending
+
+    res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error sending email" });
+  }
+});
 
 const startApp = async () => {
   try {
