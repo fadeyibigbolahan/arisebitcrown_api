@@ -14,6 +14,12 @@ const UserSchema = new Schema(
         lastRewardDate: { type: Date, default: null }, // New field
       },
     ],
+    referrals: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "users",
+      },
+    ],
     phoneNumber: { type: String },
     verificationCode: { type: String },
   },

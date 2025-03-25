@@ -53,7 +53,8 @@ const userRegister = async (userDets, role, res) => {
 
       if (referUser) {
         // Check if a user was found
-        referUser.walletBalance += 5;
+        referUser.referrals.push(newUser._id); // Add the new user to the referrals array
+        // referUser.walletBalance += 5;
         await referUser.save(); // Await the save operation
       }
     }
@@ -74,6 +75,7 @@ const userRegister = async (userDets, role, res) => {
           compeltedTasks: savedUser.compeltedTasks,
           transactions: savedUser.transactions,
           verificationCode: savedUser.verificationCode,
+          referrals: savedUser.referrals,
         },
         SECRET,
         { expiresIn: "7 days" }
@@ -149,6 +151,7 @@ const userLogin = async (userCreds, res) => {
         compeltedTasks: user.compeltedTasks,
         transactions: user.transactions,
         verificationCode: user.verificationCode,
+        referrals: user.referrals,
       },
       SECRET,
       { expiresIn: "7d" } // More readable time format
@@ -164,6 +167,7 @@ const userLogin = async (userCreds, res) => {
       compeltedTasks: user.compeltedTasks, // Fixed typo
       transactions: user.transactions,
       verificationCode: user.verificationCode,
+      referrals: user.referrals,
       token: `Bearer ${token}`,
       expiresIn: 168, // Should be consistent with the token expiration
     };

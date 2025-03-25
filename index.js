@@ -92,13 +92,14 @@ const rewardDistributionFunction = async () => {
   console.log("Reward distribution completed.");
 };
 
-app.post("/send-email", upload.single("image"), async (req, res) => {
+app.post("/send-email", async (req, res) => {
   const { text, email } = req.body;
-  console.log("Calleddd", text, email);
-  const image = req.file; // Uploaded image
+  console.log("Received Data:", { text, email });
 
-  if (!text || !image) {
-    return res.status(400).json({ error: "Text and image are required" });
+  if (!text || !email) {
+    return res
+      .status(400)
+      .json({ error: "Email and task selection are required." });
   }
 
   try {
@@ -111,24 +112,18 @@ app.post("/send-email", upload.single("image"), async (req, res) => {
     });
 
     let mailOptions = {
-      from: emailAddress,
+      from: "emailAddress",
       to: "areaforsuccess45@gmail.com", // Replace with your email
-      subject: "Payment confirmation",
-      text: `User submitted: ${email}, ${text}`,
-      attachments: [
-        {
-          filename: image.originalname,
-          path: image.path, // Path to temporary uploaded file
-        },
-      ],
+      subject: "Payment Confirmation",
+      text: `User Email: ${email}\nSelected Task: ${text}`,
     };
 
     await transporter.sendMail(mailOptions);
-    fs.unlinkSync(image.path); // Delete file after sending
+    console.log("Email sent successfully!");
 
-    res.status(200).json({ message: "Email sent successfully" });
+    res.status(200).json({ message: "Email sent successfully!" });
   } catch (error) {
-    console.error(error);
+    console.error("Error sending email:", error);
     res.status(500).json({ error: "Error sending email" });
   }
 });
